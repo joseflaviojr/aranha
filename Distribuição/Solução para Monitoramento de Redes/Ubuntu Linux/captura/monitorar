@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cd $CAPTURA
+$JAVA/bin/java -cp aranha.jar:joseflavio2009.jar com.joseflavio.aranha.ControlarEspacoLivre -prefixo cap -digitos 7 -espaco 20000 &
+$JAVA/bin/java -cp aranha.jar:joseflavio2009.jar:commons-net-3.0.1.jar com.joseflavio.aranha.Aranha -prefixo cap -digitos 7 -intervalo $INTERVALO -eterna -foco $FOCO -saida $CAPTURA -analises Dia,ResumoDia,NodosIPDia,NodosIPGravacao,NodosIPFocosGravacao,HTTPDia -ftpServidor $FTP_SERVIDOR -ftpUsuario $FTP_USUARIO -ftpSenha $FTP_SENHA -ftpDestino $FTP_DESTINO &
+sleep $INTERVALO
+sleep 4
+./visualizar $(date +%Y-%m-%d) &
+$JAVA/bin/java -cp aranha.jar:joseflavio2009.jar com.joseflavio.aranha.Agendar -hora 0 -minuto 1 "$CAPTURA/visualizar" &

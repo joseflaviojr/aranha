@@ -1,0 +1,102 @@
+---------------------------------------------------------------------------------
+
+Projeto: Monitoramento de Rede com Aranha
+
+Autoria: José Flávio de Souza Dias Júnior
+
+Contato: contato@joseflavio.com
+
+Testado em: Ubuntu Desktop 11.04 64 bits
+
+Requisitos:
+	- Aranha 2011
+
+---------------------------------------------------------------------------------
+
+Instalar a Java e configurar devidamente /etc/bash.bashrc
+
+export JAVA_HOME=/usr/local/java/jre1.6.0_29
+export PATH=$PATH:$JAVA_HOME/bin
+
+---------------------------------------------------------------------------------
+
+Copiar a pasta "captura" para a raiz ou para outro lugar.
+
+chmod 777 -R /captura/
+
+---------------------------------------------------------------------------------
+
+Copiar todos os arquivos localizados em "Aranha\Distribuição\Linux" para a pasta "captura".
+
+chmod +x /captura/*
+
+---------------------------------------------------------------------------------
+
+Implantar e configurar devidamente /etc/profile.d/aranha_conf.sh
+
+---------------------------------------------------------------------------------
+
+Implantar /etc/init.d/aranha
+
+update-rc.d aranha start 99 2 .
+
+---------------------------------------------------------------------------------
+
+Configurar a placa de rede com IP local:
+
+IP       192.168.1.1
+MÁSCARA  255.255.255.0
+GATEWAY  0.0.0.0
+
+---------------------------------------------------------------------------------
+
+aa-complain /usr/sbin/tcpdump
+
+---------------------------------------------------------------------------------
+
+Colocar o usuário no grupo root.
+
+Sistema > Administração > Usuários e grupos
+
+---------------------------------------------------------------------------------
+
+Colocar para logar automaticamente.
+
+Sistema > Administração > Tela de login
+
+---------------------------------------------------------------------------------
+
+Desativar o protetor e o bloqueio de tela.
+
+Sistema > Preferências > Protetor de tela
+
+---------------------------------------------------------------------------------
+
+Deixar o monitor sempre ligado.
+
+Sistema > Preferências > Gerenciamento de energia > Fazer monitor dormir quando inativo [N]
+
+---------------------------------------------------------------------------------
+
+Sistema > Preferências > Aplicativos de sessão
+
+Nome:        Aranha
+Comando:     /captura/monitorar
+Comentário:  Monitoramento da rede
+
+---------------------------------------------------------------------------------
+
+Adaptar o script /captura/visualizar para a resolução do seu monitor.
+
+---------------------------------------------------------------------------------
+
+Reiniciar o computador.
+
+---------------------------------------------------------------------------------
+
+Caso queira utilizar a interface gráfica da Aranha:
+
+cd /captura
+./aranha.interface
+
+---------------------------------------------------------------------------------

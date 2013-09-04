@@ -1,0 +1,312 @@
+options
+{
+    LOOKAHEAD = 1;
+    IGNORE_CASE = true;
+    COMMON_TOKEN_ACTION = false;
+    STATIC = false;
+}
+
+PARSER_BEGIN(AranhaFiltragem)
+
+package com.joseflavio.aranha.filtro.javacc;
+
+import com.joseflavio.aranha.*;
+import com.joseflavio.aranha.filtro.*;
+
+public class AranhaFiltragem {
+}
+
+PARSER_END(AranhaFiltragem)
+
+SKIP :
+{
+    " "
+|   "\r"
+|   "\n"
+|   "\t"
+}
+
+TOKEN:{
+    < IGUAL: 		"=" >
+|   < DIFERENTE:	"!=" >
+|   < MAIOR:		">" >
+|   < MAIOR_IGUAL:	">=" >
+|   < MENOR:		"<" >
+|   < MENOR_IGUAL:	"<=" >
+
+|   < E:			"e" >
+|   < OU:			"ou" >
+|   < OUEX:			"ouex" >
+
+|   < NULO:			"nulo" >
+|   < VERDADEIRO:	"v" >
+|   < FALSO:		"f" >
+}
+
+TOKEN : {
+
+	< #D: ["0"-"9"] >
+
+|	< #H: ["0"-"9","a"-"f","A"-"F"] >
+
+|	< #B: ["0","1","?"] >
+
+|	< DECIMAL: (<D>)+ >
+
+|	< HEXADECIMAL: "0x" (<H>)+ >
+
+|	< BYTE: <B> <B> <B> <B> <B> <B> <B> <B> >
+
+|	< #IPV4_: ( "*" | <DECIMAL> ) "." ( "*" | <DECIMAL> ) "." ( "*" | <DECIMAL> ) "." ( "*" | <DECIMAL> ) >
+|	< IPV4: <IPV4_> ( "+" <IPV4_> )* >
+
+|	< MAC: <H> <H> [":","-"] <H> <H> [":","-"] <H> <H> [":","-"] <H> <H> [":","-"] <H> <H> [":","-"] <H> <H> >
+	
+}
+
+Filtro parse():
+{
+	Filtro e;
+	String op;
+	Filtro d;	
+}
+{
+	(
+		( ( e = filtro() ) | ( "(" e = parse() ")" ) )
+		(
+			( op = logica() )
+			( ( d = filtro() ) | ( "(" d = parse() ")" ) )
+			{ e = new LogicaFiltro( e, op, d ); }
+		)*
+	)
+	{ return e; }
+}
+
+private Filtro filtro():
+{
+	Filtro f;
+}
+{
+	(
+	
+		( "ip.o" f = ip_o() ) |
+		( "ip.d" f = ip_d() ) |
+		( "ip.tipo" f = ip_tipo() ) |
+		( "ip.tos" f = ip_tos() ) |
+		
+		( "eth.o" f = eth_o() ) |
+		( "eth.d" f = eth_d() ) |
+		( "eth.tipo" f = eth_tipo() ) |
+		
+		( "vlan.pri" f = vlan_pri() ) |
+		( "vlan.cfi" f = vlan_cfi() ) |
+		( ( "vlan.id" | "vlan" ) f = vlan_id() ) |
+		
+		( "mpls.ttl" f = mpls_ttl() ) |
+		( "mpls.bits" f = mpls_bits() ) |
+		( ( "mpls.rotulo" | "mpls" ) f = mpls_rotulo() ) |
+		
+		( "tcp.o" f = tcp_o() ) |
+		( "tcp.d" f = tcp_d() )
+		
+	)
+	{ return f; }
+}
+
+private String logica():
+{
+	Token t = null;
+}
+{
+	( t = <E> | t = <OU> | t = <OUEX> )
+	{ return t.image; }
+}
+
+private String operador():
+{
+	Token t = null;
+}
+{
+	( t = <IGUAL> | t = <DIFERENTE> | t = <MAIOR> | t = <MAIOR_IGUAL> | t = <MENOR> | t = <MENOR_IGUAL> )
+	{ return t.image; }
+}
+
+private int _int():
+{
+	Token t = null;
+}
+{
+	( t = <DECIMAL> { return Integer.parseInt( t.image ); } ) |
+	( t = <HEXADECIMAL> { return Integer.parseInt( t.image.substring( 2 ), 16 ); } )
+}
+
+private Filtro ip_o():
+{
+	boolean negacao = false;
+	Token t;
+	Filtro filtro;
+}
+{
+	( <IGUAL> | <DIFERENTE> { negacao = true; } )
+	( 
+		( t = <IPV4> { filtro = new IP_Filtro( IP.instanciar( t.image ), true ); } ) |
+		( "ip.d"     { filtro = new IP_OrigemXDestinoFiltro(); } )
+	)
+	{ return negacao ? new NegacaoFiltro( filtro ) : filtro; }
+}
+
+private Filtro ip_d():
+{
+	boolean negacao = false;
+	Token t;
+	Filtro filtro;
+}
+{
+	( <IGUAL> | <DIFERENTE> { negacao = true; } )
+	( 
+		( t = <IPV4> { filtro = new IP_Filtro( IP.instanciar( t.image ), false ); } ) |
+		( "ip.o"     { filtro = new IP_OrigemXDestinoFiltro(); } )
+	)
+	{ return negacao ? new NegacaoFiltro( filtro ) : filtro; }
+}
+
+private Filtro ip_tipo():
+{
+	int t;
+}
+{
+	( <IGUAL>     t = _int() { return new IP_TipoFiltro( t ); } ) |
+	( <DIFERENTE> t = _int() { return new NegacaoFiltro( new IP_TipoFiltro( t ) ); } )
+}
+
+private Filtro ip_tos():
+{
+	Token t;
+}
+{
+	( <IGUAL>     t = <BYTE> { return new IP_ToSFiltro( new ToS( t.image ) ); } ) |
+	( <DIFERENTE> t = <BYTE> { return new NegacaoFiltro( new IP_ToSFiltro( new ToS( t.image ) ) ); } )
+}
+
+private Filtro eth_o():
+{
+	boolean negacao = false;
+	Token t;
+	Filtro filtro;
+}
+{
+	( <IGUAL> | <DIFERENTE> { negacao = true; } )
+	( 
+		( t = <MAC> { filtro = new Ethernet_Filtro( new MAC( t.image ), true ); } ) |
+		( "eth.d"   { filtro = new Ethernet_OrigemXDestinoFiltro(); } )
+	)
+	{ return negacao ? new NegacaoFiltro( filtro ) : filtro; }
+}
+
+private Filtro eth_d():
+{
+	boolean negacao = false;
+	Token t;
+	Filtro filtro;
+}
+{
+	( <IGUAL> | <DIFERENTE> { negacao = true; } )
+	( 
+		( t = <MAC> { filtro = new Ethernet_Filtro( new MAC( t.image ), false ); } ) |
+		( "eth.o"   { filtro = new Ethernet_OrigemXDestinoFiltro(); } )
+	)
+	{ return negacao ? new NegacaoFiltro( filtro ) : filtro; }
+}
+
+private Filtro eth_tipo():
+{
+	int t;
+}
+{
+	( <IGUAL>     t = _int() { return new Ethernet_TipoFiltro( t ); } ) |
+	( <DIFERENTE> t = _int() { return new NegacaoFiltro( new Ethernet_TipoFiltro( t ) ); } )
+}
+
+private Filtro vlan_id():
+{
+	int t;
+}
+{
+	( <IGUAL>     t = _int() { return new VLAN_IdFiltro( t ); } ) |
+	( <DIFERENTE> t = _int() { return new NegacaoFiltro( new VLAN_IdFiltro( t ) ); } )
+}
+
+private Filtro vlan_pri():
+{
+	int t;
+}
+{
+	( <IGUAL>     t = _int() { return new VLAN_PrioridadeFiltro( t ); } ) |
+	( <DIFERENTE> t = _int() { return new NegacaoFiltro( new VLAN_PrioridadeFiltro( t ) ); } )
+}
+
+private Filtro vlan_cfi():
+{
+	int t;
+}
+{
+	( <IGUAL>     t = _int() { return new VLAN_CFIFiltro( t ); } ) |
+	( <DIFERENTE> t = _int() { return new NegacaoFiltro( new VLAN_CFIFiltro( t ) ); } )
+}
+
+private Filtro mpls_rotulo():
+{
+	int nivel = 0;
+	int t;
+}
+{
+	( "[" nivel = _int() "]" )?
+	(
+		( <IGUAL>     t = _int() { return new MPLS_RotuloFiltro( nivel, t ); } ) |
+		( <DIFERENTE> t = _int() { return new NegacaoFiltro( new MPLS_RotuloFiltro( nivel, t ) ); } )
+	)
+}
+
+private Filtro mpls_bits():
+{
+	int nivel = 0;
+	int t;
+}
+{
+	( "[" nivel = _int() "]" )?
+	(
+		( <IGUAL>     t = _int() { return new MPLS_BitsFiltro( nivel, t ); } ) |
+		( <DIFERENTE> t = _int() { return new NegacaoFiltro( new MPLS_BitsFiltro( nivel, t ) ); } )
+	)
+}
+
+private Filtro mpls_ttl():
+{
+	int nivel = 0;
+	int t;
+}
+{
+	( "[" nivel = _int() "]" )?
+	(
+		( <IGUAL>     t = _int() { return new MPLS_TTLFiltro( nivel, t ); } ) |
+		( <DIFERENTE> t = _int() { return new NegacaoFiltro( new MPLS_TTLFiltro( nivel, t ) ); } )
+	)
+}
+
+private Filtro tcp_o():
+{
+	int t;
+}
+{
+	( <IGUAL>     t = _int() { return new TCP_PortaFiltro( t, true ); } ) |
+	( <DIFERENTE> t = _int() { return new NegacaoFiltro( new TCP_PortaFiltro( t, true ) ); } )
+}
+
+private Filtro tcp_d():
+{
+	int t;
+}
+{
+	( <IGUAL>     t = _int() { return new TCP_PortaFiltro( t, false ); } ) |
+	( <DIFERENTE> t = _int() { return new NegacaoFiltro( new TCP_PortaFiltro( t, false ) ); } )
+}

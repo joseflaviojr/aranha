@@ -1,0 +1,27 @@
+
+-------------------------------------------------------------
+
+Microsoft Windows:
+
+Esteja como Administrador do sistema.
+Tenha a Java instalada.
+Execute "Aranha\Distribuição\Windows\Instalar.bat"
+Acrescente "c:\Aranha" à variável de ambiente PATH em Painel de Controle -> Sistema -> Configurações Avançadas -> Variáveis de Ambiente.
+Execute "Aranha 2011", encontrada em sua área de trabalho. Ou então "c:\Aranha\Aranha 2011".
+
+-------------------------------------------------------------
+
+Ubuntu Linux:
+
+Esteja como root.
+Tenha a Java instalada. Configure devidamente a variável PATH em "/etc/bash.bashrc" incluindo o diretório "bin" da Java:
+export JAVA_HOME=/usr/local/java/jre1.6.0_29
+export PATH=$PATH:$JAVA_HOME/bin
+Copie todos os arquivos do diretório "Aranha\Distribuição\Linux" para algum diretório do computador. Aconselha-se "/aranha".
+Torne-os executáveis: chmod +x /aranha/*
+Habilite o tcpdump: aa-complain /usr/sbin/tcpdump
+Execute "Aranha 2011" ou "aranha.interface":
+cd /aranha
+./aranha.interface
+
+-------------------------------------------------------------

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd $CAPTURA
+./visualizar1024x768 &
+

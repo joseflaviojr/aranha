@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [ $1 ]
+then
+DATA=$1
+else
+DATA=$(date +%Y-%m-%d)
+fi
+
+cd $CAPTURA
+
+$JAVA/bin/java -cp aranha.jar:joseflavio2009.jar:jfreechart-1.0.13.jar:jcommon-1.0.16.jar com.joseflavio.aranha.Grafico $DATA.10s.csv -intervalo $INTERVALO -naomostrar 0-1,4-100 -rotulo 2:Download -cor 2:0000FF -rotulo 3:Upload -cor 3:00FF00 -esperar -janela 0,0,1024,393 -podar -titulo "$FOCO1_TITULO em $DATA" -fechamentoDia &
+
+$JAVA/bin/java -cp aranha.jar:joseflavio2009.jar:jfreechart-1.0.13.jar:jcommon-1.0.16.jar com.joseflavio.aranha.Grafico $DATA.10s.csv -intervalo $INTERVALO -naomostrar 0-6,9-100 -rotulo 7:Download -cor 7:0000FF -rotulo 8:Upload -cor 8:00FF00 -esperar -janela 445,417,580,327 -podar -titulo "$FOCO2_TITULO em $DATA" -fechamentoDia -podaInicial "07:00:00" -podaFinal "18:00:00" &
+
+$JAVA/bin/java -cp aranha.jar:joseflavio2009.jar:jcommon-1.0.16.jar com.joseflavio.aranha.Nodos NodosIP[${FOCO1//\*/#}].Ultimos${INTERVALO}s.csv -intervalo $INTERVALO -esperar -console 11,21,55 -posicao 0,550 -titulo "$FOCO1_TITULO em $DATA - $INTERVALO s" -fechamentoDia &
+

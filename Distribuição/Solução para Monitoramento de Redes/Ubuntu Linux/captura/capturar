@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd $CAPTURA
+$JAVA/bin/java -cp aranha.jar:joseflavio2009.jar com.joseflavio.aranha.PreTCPDump -prefixo cap -digitos 7
+tcpdump -C 50 -W 10000000 -s 140 -w cap -i $PLACA &

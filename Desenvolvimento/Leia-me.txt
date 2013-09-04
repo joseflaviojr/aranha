@@ -1,0 +1,12 @@
+
+Projeto: Aranha 2011.10
+
+Autoria: José Flávio de Souza Dias Júnior
+
+Contato: contato@joseflavio.com
+
+Plataforma: Java SE 6
+
+Requisitos:
+	- Eclipse IDE
+	- José Flávio Livre 2009

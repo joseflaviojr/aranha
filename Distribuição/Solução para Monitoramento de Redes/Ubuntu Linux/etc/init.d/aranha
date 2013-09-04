@@ -1,0 +1,7 @@
+#!/bin/bash
+
+source /etc/profile.d/aranha_conf.sh
+
+ifconfig $PLACA promisc up
+
+$CAPTURA/capturar
